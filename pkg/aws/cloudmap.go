@@ -21,6 +21,7 @@ const (
 	MetricsSchemeTag        = "METRICS_SCHEME"
 	EcsMetricsPortTag       = "ECS_METRICS_PORT"
 	EcsMetricsPathTag       = "ECS_METRICS_PATH"
+	EcsMetricsSchemeTag     = "ECS_METRICS_SCHEME"
 )
 
 type CloudMapClient struct {
@@ -154,7 +155,7 @@ func (c *CloudMapClient) getInstances(serviceSummary *servicediscovery.ServiceSu
 
 // Construct Prometheus scrape configuration for each ServiceDiscovery instance based on its attributes and the associated ServiceDiscovery service tags
 func (c *CloudMapClient) getInstanceScrapeConfigurationApplication(sdInstance *ServiceDiscoveryInstance, serviceTags map[string]*string, sdNamespace *string) (*InstanceScrapeConfig, error) {
-	metricsScheme, present := sdInstance.attributes[MetricsSchemeTag]
+	metricsScheme, present := serviceTags[MetricsSchemeTag]
 	if !present {
 		metricsScheme = aws.String("http")
 	}
@@ -185,6 +186,11 @@ func (c *CloudMapClient) getInstanceScrapeConfigurationApplication(sdInstance *S
 // The Docker stats are available at the Task metadata endpoint ${ECS_CONTAINER_METADATA_URI_V4}/stats
 // https://github.com/prometheus-community/ecs_exporter provides an implementation of a side-car that exposes Docker stats as Prometheus metrics
 func (c *CloudMapClient) getInstanceScrapeConfigurationInfrastructure(sdInstance *ServiceDiscoveryInstance, serviceTags map[string]*string, sdNamespace *string) (*InstanceScrapeConfig, error) {
+	metricsScheme, present := serviceTags[EcsMetricsSchemeTag]
+	if !present {
+		metricsScheme = aws.String("http")
+	}
+
 	// Path for infrastructure metrics endpoint is expected as a resource tag with the key 'ECS_METRICS_PATH'
 	metricsPath, present := serviceTags[EcsMetricsPathTag]
 	if !present {
@@ -197,8 +203,6 @@ func (c *CloudMapClient) getInstanceScrapeConfigurationInfrastructure(sdInstance
 		return nil, nil
 	}
 
-	// FIXME
-	metricsScheme := aws.String("http")
 	return c.getInstanceScrapeConfiguration(sdInstance, metricsScheme, metricsPort, metricsPath, sdNamespace)
 }
 
@@ -234,7 +238,7 @@ func (c *CloudMapClient) getInstanceScrapeConfiguration(sdInstance *ServiceDisco
 	labels["taskid"] = *sdInstance.instanceId
 	labels["instance"] = *address
 	labels["__metrics_path__"] = *metricsPath
-	labels["scheme"] = *metricsScheme
+	labels["__scheme__"] = *metricsScheme
 
 	return &InstanceScrapeConfig{Targets: targets, Labels: labels}, nil
 }
