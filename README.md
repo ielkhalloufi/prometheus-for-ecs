@@ -9,6 +9,15 @@ The two sub-directories, namely [deploy-prometheus](https://github.com/aws-sampl
 - The second approach employs a single instance of [AWS Distro for OpenTelemetry Collector deployed to an ECS cluster](https://github.com/aws-samples/prometheus-for-ecs/blob/main/deploy-adot/README.md). Prometheus metrics are collected by the Prometheus Receiver that runs in the ADOT Collector pipeline.
 
 
+## Upload / Update custom docker image to idealo Global ECR
+
+documentation: https://github.com/idealo/ops-persistence-ecr
+
+> aws ecr get-login-password --region eu-central-1 | sudo podman login --username AWS --password-stdin 248883572865.dkr.ecr.eu-central-1.amazonaws.com/observability/prometheus-sd-config-reloader
+> podman build -t 248883572865.dkr.ecr.eu-central-1.amazonaws.com/observability/prometheus-sd-config-reloader:custom .
+> podman push 248883572865.dkr.ecr.eu-central-1.amazonaws.com/observability/prometheus-sd-config-reloader:custom
+
+
 ## Security
 
 See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
