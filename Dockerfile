@@ -7,7 +7,7 @@ RUN go mod vendor
 COPY . .
 ARG TARGETOS
 ARG TARGETARCH
-RUN CGO_ENABLED=0 GO111MODULE=on GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -a -mod=vendor -tags=netgo -o config-reloader cmd/main.go 
+RUN CGO_ENABLED=0 GO111MODULE=on go build -a -mod=vendor -tags=netgo -o config-reloader cmd/main.go 
 
 
 FROM alpine:latest AS final
