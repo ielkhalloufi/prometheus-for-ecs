@@ -170,10 +170,10 @@ func getScrapeConfig(w http.ResponseWriter, r *http.Request) {
 func buildSrapeConfig() *string {
 	discoveryNamespacesParameter, present := os.LookupEnv("DISCOVERY_NAMESPACES_PARAMETER_NAME")
 	if !present {
-		discoveryNamespacesParameter = "ECS-ServiceDiscovery-Namespaces"
+		log.Fatal("DISCOVERY_NAMESPACES_PARAMETER_NAME environment variable is not set")
 	}
-	namespaceList := aws.GetParameter(discoveryNamespacesParameter)
-	namespaces := strings.Split(*namespaceList, ",")
+
+	namespaces := strings.Split(discoveryNamespacesParameter, ",")
 	scrapConfig := aws.GetPrometheusScrapeConfig(namespaces)
 	return scrapConfig
 }
