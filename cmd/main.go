@@ -17,6 +17,7 @@ import (
 const (
 	TARGETS = "/prometheus-targets"
 	PORT    = 9001
+	HEALTH  = "/health"
 )
 
 var present bool
@@ -42,6 +43,7 @@ func httpBasedSD() {
 	log.Println("Service discovery application started in HTTP-based mode")
 	serveMux := http.NewServeMux()
 	serveMux.HandleFunc(TARGETS, getScrapeConfig)
+	serveMux.HandleFunc(HEALTH, healthCheck)
 
 	stopChannel := make(chan string)
 	defer close(stopChannel)
@@ -165,6 +167,12 @@ func getScrapeConfig(w http.ResponseWriter, r *http.Request) {
 	scrapConfig := buildSrapeConfig()
 	w.Header().Set("Content-Type", "application/json")
 	io.WriteString(w, *scrapConfig)
+}
+
+func healthCheck(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	io.WriteString(w, `{"status":"ok"}`)
 }
 
 func buildSrapeConfig() *string {
